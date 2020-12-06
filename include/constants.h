@@ -3,4 +3,5 @@
 
 #include <Arduino.h>
 
-const uint8_t BOLT_BUTTON_PIN = D0;
+const char* HUT_BUTTON_SETUP_SSID = "Hut Button Setup";
+const uint8_t CONNECT_BUTTON_PIN = D0;

@@ -28,32 +28,67 @@
 
 #pragma endregion
 
-#include "SerialDebug.h" 
+#include "SerialDebug.h"
 #include "constants.h"
 
+// WiFi.
+#include <ESP8266WiFi.h>
+#include <DNSServer.h>
+#include <ESP8266WebServer.h> 
+#include <WiFiManager.h>
 
-bool checkButtonPressed(uint8_t pin) {
+bool checkButtonPressed(uint8_t pin)
+{
   return digitalRead(pin) == HIGH;
 }
 
-void setup() {
-  	// Set serial rate.
-	Serial.begin(SERIAL_SPEED);
-  #ifdef __AVR_ATmega32U4__ 
-  while (!Serial) {} // Wait for serial connection to open (only necessary on some boards).
-  #else
+void setup()
+{
+  // Set serial rate.
+  Serial.begin(SERIAL_SPEED);
+#ifdef __AVR_ATmega32U4__
+  while (!Serial)
+  {
+  } // Wait for serial connection to open (only necessary on some boards).
+#else
   delay(500); // Wait a fixed time for serial.
-  #endif
-  pinMode(BOLT_BUTTON_PIN, OUTPUT);
+#endif
+  pinMode(CONNECT_BUTTON_PIN, OUTPUT);
 }
 
-void loop() {
+void loop()
+{
   // Handle Serial Debug.
-	debugHandle();
+  debugHandle();
 
-  if (checkButtonPressed(BOLT_BUTTON_PIN)) {
+  if (checkButtonPressed(CONNECT_BUTTON_PIN))
+  {
     debugA("Button is pressed.");
-  } else {
+    // WiFiManager.
+    // Local intialization. Once its business is done, there is no need to keep it around.
+    WiFiManager wifiManager;
+
+    // Reset settings - for testing.
+    // wifiManager.resetSettings();
+
+    // Sets timeout until configuration portal gets turned off.
+    // Useful to make it all retry or go to sleep in seconds.
+    // wifiManager.setTimeout(120);
+
+    // Start an access point with the specified and enter into a blocking loop awaiting configuration.
+    if (!wifiManager.startConfigPortal(HUT_BUTTON_SETUP_SSID)) {
+      Serial.println("failed to connect and hit timeout");
+      delay(3000);
+      // Reset and try again, or maybe put it to deep sleep.
+      ESP.reset();
+      delay(5000);
+    }
+
+    // If you get here you have connected to the WiFi.
+    debugA("Connected to WiFi.");
+  }
+  else
+  {
     debugA("Button is not pressed.");
   }
 }
