@@ -1,9 +1,59 @@
 #include <Arduino.h>
 
+#pragma region SerialDebug Settings
+// SerialDebug Library
+
+// Disable all debug ? Good for release builds (production)
+// as nothing from SerialDebug is compiled, zero overhead :-)
+// For it just uncomment the DEBUG_DISABLED
+// #define DEBUG_DISABLED true
+
+// Define the initial debug level here (uncomment to do it)
+#define DEBUG_INITIAL_LEVEL DEBUG_LEVEL_VERBOSE
+
+// Disable SerialDebug debugger ? No more commands and features as functions and globals
+// Uncomment this to disable it
+#define DEBUG_DISABLE_DEBUGGER false
+
+// Disable auto function naming (good if your debug message already contains it)
+//#define DEBUG_AUTO_FUNC_DISABLED true
+
+// Force debug messages to use flash?
+// Disable native Serial.printf (if using)
+// Good for low memory, due to flash use, but is slowwer and doesn't use macros
+//#define DEBUG_USE_FLASH_F true
+
+// Set serial speed (for https://protosupplies.com/product/esp8266-nodemcu-v1-0-esp-12e-wifi-module/ it is 115200).
+#define SERIAL_SPEED 115200
+
+#pragma endregion
+
+#include "SerialDebug.h" 
+#include "constants.h"
+
+
+bool checkButtonPressed(uint8_t pin) {
+  return digitalRead(pin) == HIGH;
+}
+
 void setup() {
-  // put your setup code here, to run once:
+  	// Set serial rate.
+	Serial.begin(SERIAL_SPEED);
+  #ifdef __AVR_ATmega32U4__ 
+  while (!Serial) {} // Wait for serial connection to open (only necessary on some boards).
+  #else
+  delay(500); // Wait a fixed time for serial.
+  #endif
+  pinMode(BOLT_BUTTON_PIN, OUTPUT);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Handle Serial Debug.
+	debugHandle();
+
+  if (checkButtonPressed(BOLT_BUTTON_PIN)) {
+    debugA("Button is pressed.");
+  } else {
+    debugA("Button is not pressed.");
+  }
 }
